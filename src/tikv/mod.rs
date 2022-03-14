@@ -90,6 +90,6 @@ pub async fn do_async_close() -> AsyncResult<()> {
 
 pub async fn do_async_connect(addrs: Vec<String>) -> AsyncResult<()> {
     do_async_txn_connect(addrs.clone()).await?;
-    do_async_raw_connect(addrs).await;
+    do_async_raw_connect(addrs).await?;
     Ok(())
 }
