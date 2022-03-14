@@ -16,7 +16,7 @@ pub use ping::Ping;
 mod unknown;
 pub use unknown::Unknown;
 
-use crate::{Connection, Db, Frame, Parse, ParseError, Shutdown, metrics::{REQUEST_COUNTER, REQUEST_CMD_COUNTER, REQUEST_CMD_FINISH_COUNTER}};
+use crate::{Connection, Db, Frame, Parse, ParseError, Shutdown};
 
 /// Enumeration of supported Redis commands.
 ///
@@ -53,8 +53,6 @@ impl Command {
         // is read and converted to lower cases in order to do case sensitive
         // matching.
         let command_name = parse.next_string()?.to_lowercase();
-        REQUEST_COUNTER.inc();
-        REQUEST_CMD_COUNTER.with_label_values(&[&command_name]).inc();
         // Match the command name, delegating the rest of the parsing to the
         // specific command.
         let command = match &command_name[..] {

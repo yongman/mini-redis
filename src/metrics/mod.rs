@@ -1,4 +1,4 @@
-use prometheus::{IntCounter, IntCounterVec, IntGauge};
+use prometheus::{IntCounter, IntCounterVec, IntGauge, HistogramVec, exponential_buckets};
 
 mod http;
 
@@ -23,6 +23,13 @@ lazy_static! {
         "redistikv_command_requests_finish",
         "Request command finish counter",
         &["cmd"]
+    )
+    .unwrap();
+    pub static ref REQUEST_CMD_HANDLE_TIME: HistogramVec = register_histogram_vec!(
+        "redistikv_command_handle_time",
+        "Bucketed histogram of command handle duration",
+        &["cmd"],
+        exponential_buckets(0.0005, 2.0, 20).unwrap()
     )
     .unwrap();
 }
