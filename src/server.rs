@@ -3,6 +3,7 @@
 //! Provides an async `run` function that listens for inbound connections,
 //! spawning a task per connection.
 
+use crate::metrics::CURRENT_CONNECTION_COUNTER;
 use crate::{Command, Connection, Db, DbDropGuard, Shutdown};
 
 use std::future::Future;
@@ -273,6 +274,7 @@ impl Listener {
             // asynchronous green threads and are executed concurrently.
             tokio::spawn(async move {
                 // Process the connection. If an error is encountered, log it.
+                CURRENT_CONNECTION_COUNTER.inc();
                 if let Err(err) = handler.run().await {
                     println!("Connection Error: {:?}", &err);
                     error!(cause = ?err, "connection error");
@@ -396,6 +398,7 @@ impl Drop for Handler {
         // bug causes a panic. The permit would never be returned to the
         // semaphore.
         // self.limit_connections.add_permits(1);
-        println!("Drop Handler")
+        // println!("Drop Handler")
+        CURRENT_CONNECTION_COUNTER.dec();
     }
 }

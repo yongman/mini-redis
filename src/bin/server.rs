@@ -6,7 +6,7 @@
 //!
 //! The `clap` crate is used for parsing arguments.
 
-use mini_redis::{server, DEFAULT_PORT, set_instance_id, do_async_raw_connect};
+use mini_redis::{server, DEFAULT_PORT, set_instance_id, do_async_raw_connect, prometheus_server};
 
 use structopt::StructOpt;
 use tokio::net::TcpListener;
@@ -22,8 +22,12 @@ pub async fn main() -> mini_redis::Result<()> {
     let port = cli.port.as_deref().unwrap_or(DEFAULT_PORT);
     let pd_addrs = cli.pd_addrs.as_deref().unwrap_or("127.0.0.1:2379");
     let instance_id_str = cli.instance_id.as_deref().unwrap_or("1");
+    let mut instance_id: u64 = 0;
     match instance_id_str.parse::<u64>() {
-        Ok(val) => set_instance_id(val),
+        Ok(val) => {
+            instance_id = val;
+            set_instance_id(val);
+        }
         Err(_) => set_instance_id(0),
     };
     let mut addrs: Vec<String> = Vec::new();
@@ -31,7 +35,16 @@ pub async fn main() -> mini_redis::Result<()> {
         addrs.push(s.to_string());
     });
     do_async_raw_connect(addrs).await?;
+    tokio::spawn(async move {
+        match prometheus_server(instance_id as i64).await {
+            Ok(()) => {}
+            Err(e) => {
+                println!("Prometheus Server Got Error: {}", e.to_string());
+            }
+        }
+    });
 
+    println!("Mini-Redis Server Listen on: {}:{}", "127.0.0.1", port);
     // Bind a TCP listener
     let listener = TcpListener::bind(&format!("127.0.0.1:{}", port)).await?;
 
