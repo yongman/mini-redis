@@ -2,7 +2,7 @@ use prometheus::{IntCounter, IntCounterVec, IntGauge, HistogramVec, exponential_
 
 mod http;
 
-pub use self::http::prometheus_server;
+pub use self::http::PrometheusServer;
 
 lazy_static! {
     pub static ref INSTANCE_ID_GAUGER: IntGauge =

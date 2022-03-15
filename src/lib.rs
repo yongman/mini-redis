@@ -61,7 +61,7 @@ mod shutdown;
 use shutdown::Shutdown;
 
 mod metrics;
-pub use metrics::prometheus_server;
+pub use metrics::PrometheusServer;
 
 mod tikv;
 pub use tikv::set_instance_id;
